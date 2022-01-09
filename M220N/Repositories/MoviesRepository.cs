@@ -215,8 +215,6 @@ namespace M220N.Repositories
             CancellationToken cancellationToken = default)
         {
             /*
-               TODO Ticket: Faceted Search
-
                We have already built the pipeline stages you need to perform a
                faceted search on the Movies collection. Your task is to append the
                facetStage, skipStage, and limitStage pipeline stages to the pipeline.
@@ -247,8 +245,9 @@ namespace M220N.Repositories
             {
                 matchStage,
                 sortStage,
-                // add the remaining stages in the correct order
-
+                skipStage,
+                limitStage,
+                facetStage
             };
 
             // I run the pipeline you built
