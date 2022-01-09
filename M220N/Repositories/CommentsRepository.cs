@@ -69,7 +69,6 @@ namespace M220N.Repositories
             ObjectId movieId, ObjectId commentId, string comment,
             CancellationToken cancellationToken = default)
         {
-            // Only the original comment owner can update the comment!
             return await _commentsCollection.UpdateOneAsync(
                 Builders<Comment>.Filter.And(Builders<Comment>.Filter.Eq(c => c.Id, commentId),
                                              Builders<Comment>.Filter.Eq(c => c.Email, user.Email)),
@@ -90,14 +89,10 @@ namespace M220N.Repositories
         public async Task<Movie> DeleteCommentAsync(ObjectId movieId, ObjectId commentId,
             User user, CancellationToken cancellationToken = default)
         {
-            // Ticket: Delete a Comment
-            // Implement DeleteOne() to delete an
-            // existing comment. Remember that only the original
-            // comment owner can delete the comment!
             _commentsCollection.DeleteOne(
-                Builders<Comment>.Filter.Where(
-                    c => c.MovieId == movieId
-                         && c.Id == commentId));
+                Builders<Comment>.Filter.Where(c => c.MovieId == movieId
+                                                    && c.Id == commentId
+                                                    && c.Email == user.Email));
 
             return await _moviesRepository.GetMovieAsync(movieId.ToString(), cancellationToken);
         }
