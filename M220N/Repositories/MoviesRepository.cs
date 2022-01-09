@@ -190,13 +190,10 @@ namespace M220N.Repositories
 
             var sort = new BsonDocument(sortKey, DefaultSortOrder);
 
-            // TODO Ticket: Enable filtering of movies by genre.
-            // If you get stuck see the ``GetMoviesByCastAsync`` method above.
-            /*return await _moviesCollection
-               .Find(...)
-               .ToListAsync(cancellationToken);*/
+            returnValue = await _moviesCollection
+               .Find(Builders<Movie>.Filter.AnyIn(m => m.Genres, genres))
+               .ToListAsync(cancellationToken);
 
-            // // TODO Ticket: Paging
             // TODO Ticket: Paging
             // Modify the code you added in the Text and Subfield ticket to
             // include pagination. Refer to the other methods in this class
