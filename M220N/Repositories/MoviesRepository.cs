@@ -192,9 +192,11 @@ namespace M220N.Repositories
 
             returnValue = await _moviesCollection
                .Find(Builders<Movie>.Filter.AnyIn(m => m.Genres, genres))
+               .Limit(limit)
+               .Skip(page * limit)
+               .Sort(sort)
                .ToListAsync(cancellationToken);
 
-            // TODO Ticket: Paging
             // Modify the code you added in the Text and Subfield ticket to
             // include pagination. Refer to the other methods in this class
             // if you need a hint.
