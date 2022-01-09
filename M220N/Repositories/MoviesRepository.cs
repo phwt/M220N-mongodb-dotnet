@@ -33,7 +33,7 @@ namespace M220N.Repositories
         public MoviesRepository(IMongoClient mongoClient)
         {
             _mongoClient = mongoClient;
-            var camelCaseConvention = new ConventionPack {new CamelCaseElementNameConvention()};
+            var camelCaseConvention = new ConventionPack { new CamelCaseElementNameConvention() };
             ConventionRegistry.Register("CamelCase", camelCaseConvention, type => true);
 
             _moviesCollection = mongoClient.GetDatabase("sample_mflix").GetCollection<Movie>("movies");
@@ -59,7 +59,7 @@ namespace M220N.Repositories
             string sort = DefaultSortKey, int sortDirection = DefaultSortOrder,
             CancellationToken cancellationToken = default)
         {
-            var skip =  moviesPerPage * page;
+            var skip = moviesPerPage * page;
             var limit = moviesPerPage;
 
 
@@ -114,15 +114,14 @@ namespace M220N.Repositories
             params string[] countries
             )
         {
-            // TODO Ticket: Projection - Search for movies by ``country`` and use projection to
-            // return only the ``Id`` and ``Title`` fields
-            //
-            //return await _moviesCollection
-            //   .Find(...)
-            //   .Project(...)
-            //   .ToListAsync(cancellationToken);
+            var filterDefinition = Builders<Movie>.Filter.AnyIn(m => m.Countries, countries);
+            var projectionDefinition = Builders<Movie>.Projection.Include(m => m.Title).Include(m => m.Id);
 
-            return null;
+            return await _moviesCollection
+              .Find<Movie>(filterDefinition)
+              .SortByDescending(m => m.Title)
+              .Project<MovieByCountryProjection>(projectionDefinition)
+              .ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -229,7 +228,7 @@ namespace M220N.Repositories
             var matchStage = new BsonDocument("$match",
                 new BsonDocument("cast",
                     new BsonDocument("$in",
-                        new BsonArray {cast})));
+                        new BsonArray { cast })));
 
             //I limit the number of results
             var limitStage = new BsonDocument("$limit", DefaultMoviesPerPage);
@@ -261,7 +260,7 @@ namespace M220N.Repositories
             // We build another pipeline here to count the number of
             // movies that match _without_ the limit, skip, and facet stages
             var count = BuildAndRunCountPipeline(matchStage, sortStage);
-            result.Count = (int) count.Values.First();
+            result.Count = (int)count.Values.First();
 
             return result;
         }
