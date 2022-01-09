@@ -18,7 +18,7 @@ namespace M220N.Repositories
 
         public CommentsRepository(IMongoClient mongoClient)
         {
-            var camelCaseConvention = new ConventionPack {new CamelCaseElementNameConvention()};
+            var camelCaseConvention = new ConventionPack { new CamelCaseElementNameConvention() };
             ConventionRegistry.Register("CamelCase", camelCaseConvention, type => true);
 
             _commentsCollection = mongoClient.GetDatabase("sample_mflix").GetCollection<Comment>("comments");
@@ -47,10 +47,7 @@ namespace M220N.Repositories
                     MovieId = movieId
                 };
 
-                // Ticket: Add a new Comment
-                // Implement InsertOneAsync() to insert a
-                // new comment into the comments collection.
-
+                await _commentsCollection.InsertOneAsync(newComment, cancellationToken: cancellationToken);
                 return await _moviesRepository.GetMovieAsync(movieId.ToString(), cancellationToken);
             }
             catch
@@ -72,18 +69,14 @@ namespace M220N.Repositories
             ObjectId movieId, ObjectId commentId, string comment,
             CancellationToken cancellationToken = default)
         {
-            // Ticket: Update a Comment
-            // Implement UpdateOneAsync() to update an
-            // existing comment. Remember that only the original
-            // comment owner can update the comment!
-            //
-            // // return await _commentsCollection.UpdateOneAsync(
-            // // Builders<Comment>.Filter.Where(...),
-            // // Builders<Comment>.Update.Set(...).Set(...),
-            // // new UpdateOptions { ... } ,
-            // // cancellationToken);
-
-            return null;
+            // Only the original comment owner can update the comment!
+            return await _commentsCollection.UpdateOneAsync(
+                Builders<Comment>.Filter.And(Builders<Comment>.Filter.Eq(c => c.Id, commentId),
+                                             Builders<Comment>.Filter.Eq(c => c.Email, user.Email)),
+                Builders<Comment>.Update.Set(c => c.Text, comment).Set(c => c.Date, DateTime.UtcNow),
+                new UpdateOptions { IsUpsert = false },
+                cancellationToken
+            );
         }
 
         /// <summary>
