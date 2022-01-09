@@ -213,17 +213,12 @@ namespace M220N.Repositories
                   reflect the new information in preferences.
                 */
 
-                UpdateResult updateResult = null;
-                // TODO Ticket: User Preferences
                 // Use the data in "preferences" to update the user's preferences.
-                //
-                // updateResult = await _usersCollection.UpdateOneAsync(
-                //    new BsonDocument(),
-                //    Builders<User>.Update.Set("TODO", preferences),
-                //    /* Be sure to pass a new UpdateOptions object here,
-                //       setting IsUpsert to false! */
-                //    new UpdateOptions(),
-                //    cancellationToken);
+                UpdateResult updateResult = await _usersCollection.UpdateOneAsync(
+                   Builders<User>.Filter.Eq(u => u.Email, email),
+                   Builders<User>.Update.Set(u => u.Preferences, preferences),
+                   new UpdateOptions() { IsUpsert = false },
+                   cancellationToken);
 
                 return updateResult.MatchedCount == 0
                     ? new UserResponse(false, "No user found with that email")
